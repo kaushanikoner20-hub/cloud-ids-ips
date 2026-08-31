@@ -1,0 +1,1 @@
+version: '3.8'\nservices:\n  api:\n    build: .\n    ports: ["8000:8000"]\n  mongodb:\n    image: mongo:7
