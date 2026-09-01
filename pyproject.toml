@@ -1,1 +1,20 @@
-[project]\nname = "cloud-ids-ips"\nversion = "0.1.0"\n description = "Cloud-Based Intrusion Detection and Prevention System"
+[project]
+name = "cloud-ids-ips"
+version = "0.1.0"
+description = "Cloud-Based Intrusion Detection and Prevention System"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic-settings",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+python_files = "test_*.py"
