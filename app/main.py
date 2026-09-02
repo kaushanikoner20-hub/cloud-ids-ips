@@ -2,7 +2,7 @@
 FastAPI application entry point, configuration of routers and static files.
 """
 from fastapi import FastAPI
-from app.api import routes_health
+from app.api.routes_health import router as health_router
 from app.config import settings
 from app.logging_config import setup_logging
 
@@ -19,7 +19,7 @@ def create_app() -> FastAPI:
 
     # API v1 routes
     app.include_router(
-        routes_health.router,
+        health_router,
         prefix="/api/v1",
         tags=["Health"]
     )
