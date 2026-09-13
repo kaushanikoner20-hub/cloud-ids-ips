@@ -1,0 +1,16 @@
+Metadata-Version: 2.4
+Name: cloud-ids-ips
+Version: 0.1.0
+Summary: Cloud-Based Intrusion Detection and Prevention System
+Requires-Python: >=3.11
+Requires-Dist: fastapi
+Requires-Dist: uvicorn[standard]
+Requires-Dist: pydantic
+Requires-Dist: pydantic-settings
+Requires-Dist: motor
+Requires-Dist: python-json-logger>=2.0
+Provides-Extra: dev
+Requires-Dist: pytest; extra == "dev"
+Requires-Dist: pytest-asyncio; extra == "dev"
+Requires-Dist: httpx; extra == "dev"
+Requires-Dist: mongomock-motor; extra == "dev"

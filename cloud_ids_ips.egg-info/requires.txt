@@ -1,0 +1,12 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+motor
+python-json-logger>=2.0
+
+[dev]
+pytest
+pytest-asyncio
+httpx
+mongomock-motor

@@ -1,1 +1,37 @@
-version: '3.8'\nservices:\n  api:\n    build: .\n    ports: ["8000:8000"]\n  mongodb:\n    image: mongo:7
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - idsnet
+
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      MONGO_URI: mongodb://mongodb:27017
+      MONGO_DB: ${MONGO_DB:-cloud_ids}
+      API_TOKEN: ${API_TOKEN:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - idsnet
+
+networks:
+  idsnet:
+    driver: bridge
+
+volumes:
+  mongo_data:
