@@ -1,10 +1,11 @@
 """Motor (async) MongoDB client and connection lifecycle.
 
 Per ARCHITECTURE.md Section 5: database name ``cloud_ids`` (env
-``MONGO_DB``), indexes created at startup. Phase 0 only writes to the
-``events`` collection, so only that collection's indexes are created here.
-Later phases add their own collections/indexes to this module without
-changing how routes obtain a database handle (see ``app.dependencies``).
+``MONGO_DB``), indexes created at startup. Phase 1 adds the ``alerts``
+and ``blocked_ips`` collections' indexes (no documents are written to
+them yet - that starts in Phase 2/3). ``create_index`` is idempotent:
+Mongo no-ops if an identical index already exists, so this is safe to
+run on every startup.
 """
 
 import logging
@@ -50,10 +51,33 @@ class Mongo:
     async def ensure_indexes(self) -> None:
         if self.db is None:
             return
+
         events = self.db["events"]
         await events.create_index("event_id", unique=True)
         await events.create_index([("src_ip", 1), ("occurred_at", 1)])
         await events.create_index("received_at")
+
+        alerts = self.db["alerts"]
+        await alerts.create_index("alert_id", unique=True)
+        await alerts.create_index("created_at")
+        await alerts.create_index("severity")
+        await alerts.create_index("attack_type")
+        await alerts.create_index("src_ip")
+        # Compound index for the dashboard's common filter combination
+        # (ARCHITECTURE.md Section 5.2: "compound for dashboard filters").
+        await alerts.create_index([("severity", 1), ("created_at", -1)])
+
+        blocked_ips = self.db["blocked_ips"]
+        await blocked_ips.create_index([("ip", 1), ("active", 1)])
+        await blocked_ips.create_index("expires_at")
+        # Uniqueness only applies among *active* blocks: the same IP may
+        # have multiple historical (inactive) block records over time.
+        await blocked_ips.create_index(
+            "ip",
+            unique=True,
+            partialFilterExpression={"active": True},
+            name="ip_unique_active",
+        )
 
 
 # Single instance shared across the app lifespan (set up in app.main's

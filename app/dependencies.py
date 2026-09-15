@@ -11,6 +11,19 @@ from fastapi import Depends, Header, HTTPException, status
 
 from app.config import Settings, get_settings
 from app.db.mongo import mongo
+from app.db.repositories.alerts_repo import AlertsRepository
+from app.db.repositories.blocked_ips_repo import BlockedIpsRepository
+from app.db.repositories.events_repo import EventsRepository
+from app.services.stats_service import StatsService
+
+
+def _get_collection(name: str) -> Any:
+    if mongo.db is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database not connected",
+        )
+    return mongo.db[name]
 
 
 def get_events_collection() -> Any:
@@ -20,12 +33,37 @@ def get_events_collection() -> Any:
     this returns a mongomock-motor collection, not a real Motor one, and
     the two are not type-compatible even though their async APIs match.
     """
-    if mongo.db is None:
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database not connected",
-        )
-    return mongo.db["events"]
+    return _get_collection("events")
+
+
+def get_alerts_collection() -> Any:
+    return _get_collection("alerts")
+
+
+def get_blocked_ips_collection() -> Any:
+    return _get_collection("blocked_ips")
+
+
+def get_events_repo(collection: Any = Depends(get_events_collection)) -> EventsRepository:
+    return EventsRepository(collection)
+
+
+def get_alerts_repo(collection: Any = Depends(get_alerts_collection)) -> AlertsRepository:
+    return AlertsRepository(collection)
+
+
+def get_blocked_ips_repo(
+    collection: Any = Depends(get_blocked_ips_collection),
+) -> BlockedIpsRepository:
+    return BlockedIpsRepository(collection)
+
+
+def get_stats_service(
+    events_repo: EventsRepository = Depends(get_events_repo),
+    alerts_repo: AlertsRepository = Depends(get_alerts_repo),
+    blocked_ips_repo: BlockedIpsRepository = Depends(get_blocked_ips_repo),
+) -> StatsService:
+    return StatsService(events_repo, alerts_repo, blocked_ips_repo)
 
 
 def require_api_token(

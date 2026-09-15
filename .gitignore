@@ -1,3 +1,10 @@
-__pycache__/\n*.py[cod]\n*.class\n.env\n.venv/\nvenv/\nENV/\n.vscode/\n.idea/\nmodels/*.joblib
-
+__pycache__/
+*.py[cod]
+*.class
+.env
 .venv/
+venv/
+ENV/
+.vscode/
+.idea/
+models/*.joblib

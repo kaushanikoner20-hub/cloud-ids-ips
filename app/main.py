@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import routes_events, routes_health
+from app.api import routes_alerts, routes_dashboard, routes_events, routes_health
 from app.config import get_settings
 from app.db.mongo import mongo
 from app.logging_config import configure_logging
@@ -53,6 +53,8 @@ def create_app() -> FastAPI:
 
     app.include_router(routes_health.router, prefix="/api/v1")
     app.include_router(routes_events.router, prefix="/api/v1")
+    app.include_router(routes_alerts.router, prefix="/api/v1")
+    app.include_router(routes_dashboard.router, prefix="/api/v1")
 
     # Static dashboard assets (css/js) served under /static; keep "/" as
     # its own route (rather than mounting StaticFiles at "/") so it does
